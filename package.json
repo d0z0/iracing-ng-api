@@ -41,11 +41,11 @@
   "author": "Schubert Cardozo",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/d0z0/iracing-ng-api"
   },
-  "homepage": "",
+  "homepage": "https://github.com/d0z0/iracing-ng-api#readme",
   "bugs": {
-    "url": ""
+    "url": "https://github.com/d0z0/iracing-ng-api/issues"
   },
   "license": "MIT",
   "engines": {
