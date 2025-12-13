@@ -1,0 +1,70 @@
+{
+  "name": "iracing-ng-api",
+  "version": "1.0.0",
+  "description": "Node.js client for iRacing Members-NG Data API with OAuth2 authentication (Password Limited Grant & Authorization Code Flow)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "dev": "tsc --watch",
+    "lint": "eslint src/**/*.ts",
+    "test": "jest",
+    "prepublishOnly": "npm run build",
+    "example:password-grant": "ts-node examples/password-limited-grant.ts",
+    "example:auth-code": "ts-node examples/authorization-code-flow.ts"
+  },
+  "keywords": [
+    "iracing",
+    "data-api",
+    "oauth2",
+    "authentication",
+    "nodejs",
+    "typescript",
+    "password-grant",
+    "authorization-code-flow",
+    "pkce",
+    "client-library"
+  ],
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "homepage": "",
+  "bugs": {
+    "url": ""
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.2"
+  },
+  "optionalDependencies": {
+    "dotenv": "^16.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

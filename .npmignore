@@ -1,0 +1,21 @@
+# Exclude from npm package
+src/
+examples/
+docs/
+.github/
+.gitignore
+.npmignore
+*.test.ts
+jest.config.json
+tsconfig.json
+.env
+.env.example
+.env.local
+CONTENTS.md
+DELIVERY_CHECKLIST.md
+IMPLEMENTATION.md
+INTEGRATION.md
+PROJECT_SUMMARY.md
+SETUP.md
+TESTING.md
+TEST_SUMMARY.md
