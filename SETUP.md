@@ -3,7 +3,7 @@
 ## Project Structure
 
 ```
-iracing-data-api/
+iracing-ng-api/
 ├── src/
 │   ├── auth/
 │   │   ├── index.ts                    # Auth module exports
@@ -30,7 +30,7 @@ iracing-data-api/
 ### 1. Install Dependencies
 
 ```bash
-cd /Users/schubertcardozo/Code/iracing-data-api
+cd /Users/schubertcardozo/Code/iracing-ng-api
 npm install
 ```
 
