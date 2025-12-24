@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { PKCEPair } from '../types/index.js';
+import { PKCEPair } from '../types';
 
 /**
  * Mask a secret (client_secret or password) using iRacing's masking algorithm.

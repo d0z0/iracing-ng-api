@@ -152,7 +152,7 @@ const client = new IRacingAPIClient({
 });
 
 // Automatically authenticates and makes request
-const profile = await client.get('/data/user/profile');
+const profile = await client.get('/data/member/info');
 console.log(profile);
 
 // Token is cached, subsequent requests use it

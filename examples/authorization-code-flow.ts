@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { IRacingAPIClient } from '../src/index.js';
+import { IRacingAPIClient } from '../src';
 import http from 'node:http';
 import { URL } from 'node:url';
 
@@ -83,7 +83,7 @@ async function main() {
 
         // Make a request with the new token
         console.log('\nFetching user profile...');
-        const profile = await client.get('/data/user/profile');
+        const profile = await client.get('/data/member/info');
         console.log('User Profile:', JSON.stringify(profile, null, 2));
 
         // Display token info

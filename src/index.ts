@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { PasswordLimitedGrantConfig, AuthorizationCodeFlowConfig, IRacingAPIClientConfig } from './types/index.js';
+import { PasswordLimitedGrantConfig, AuthorizationCodeFlowConfig, IRacingAPIClientConfig } from './types';
 import {
   // Request params
   GetCarsParams,
@@ -70,6 +70,7 @@ import {
   GetResultsEventLogResponse,
   GetResultsLapChartDataResponse,
   GetResultsLapDataResponse,
+  LapDataEntry,
   SearchResponse,
   GetSeasonListResponse,
   GetSeasonRaceGuideResponse,
@@ -95,10 +96,10 @@ import {
   GetWorldRecordsResponse,
   GetTrackAssetsResponse,
   GetTracksResponse,
-} from './types/index.js';
-import { TokenManager } from './auth/token-manager.js';
-import { PasswordLimitedGrantAuth } from './auth/password-limited-grant.js';
-import { AuthorizationCodeFlowAuth } from './auth/authorization-code-flow.js';
+} from './types';
+import { TokenManager } from './auth/token-manager';
+import { PasswordLimitedGrantAuth } from './auth/password-limited-grant';
+import { AuthorizationCodeFlowAuth } from './auth/authorization-code-flow';
 
 const DATA_API_BASE_URL = 'https://members-ng.iracing.com';
 
@@ -413,7 +414,34 @@ export class IRacingAPIClient {
    * Get results lap data
    */
   async getResultsLapData(params: GetResultsLapDataParams): Promise<GetResultsLapDataResponse> {
-    return this.get('/data/results/lap_data', { params });
+    const data = await this.get('/data/results/lap_data', { params });
+
+    // If chunkInfo exists, fetch the actual lap data from the chunk files
+    if (data.chunkInfo && data.chunkInfo.chunkFileNames && data.chunkInfo.chunkFileNames.length > 0) {
+      const allLaps: LapDataEntry[] = [];
+
+      for (const fileName of data.chunkInfo.chunkFileNames) {
+        const chunkUrl = `${data.chunkInfo.baseDownloadUrl}${fileName}`;
+        try {
+          const chunkData = await axios.get<any>(chunkUrl);
+          if (chunkData.data && Array.isArray(chunkData.data)) {
+            // Convert snake_case to camelCase
+            const camelCasedLaps = chunkData.data.map((lap: any) => snakeToCamelCase(lap));
+            allLaps.push(...camelCasedLaps);
+          }
+        } catch (error) {
+          console.error(`Failed to fetch chunk file: ${fileName}`, error);
+        }
+      }
+
+      // Return response with all laps data
+      return {
+        ...data,
+        laps: allLaps,
+      };
+    }
+
+    return data;
   }
 
   /**
@@ -665,5 +693,5 @@ export class IRacingAPIClient {
   }
 }
 
-export * from './types/index.js';
-export * from './auth/index.js';
+export * from './types';
+export * from './auth';

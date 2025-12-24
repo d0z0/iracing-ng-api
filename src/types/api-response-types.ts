@@ -343,11 +343,38 @@ export interface GetResultsLapChartDataResponse {
   [key: string]: any;
 }
 
+export interface LapHelmet {
+  pattern: number;
+  color1?: string;
+  color2?: string;
+  color3?: string;
+  faceType?: number;
+  helmetType?: number;
+  [key: string]: any;
+}
+
+export interface LapEvent {
+  [key: string]: any;
+}
+
 export interface LapDataEntry {
-  lapNum: number;
+  groupId: number;
+  name: string;
   custId: number;
-  displayName?: string;
-  lapTime?: number;
+  displayName: string;
+  lapNumber: number;
+  flags: number;
+  incident: boolean;
+  sessionTime: number;
+  sessionStartTime?: string | null;
+  lapTime: number;
+  teamFastestLap: boolean;
+  personalBestLap: boolean;
+  helmet: LapHelmet;
+  licenseLevel: number;
+  carNumber: string;
+  lapEvents: LapEvent[];
+  ai: boolean;
   [key: string]: any;
 }
 
