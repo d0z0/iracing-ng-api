@@ -1,6 +1,6 @@
 {
   "name": "iracing-ng-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Node.js client for iRacing Members-NG Data API with OAuth2 authentication (Password Limited Grant & Authorization Code Flow)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
