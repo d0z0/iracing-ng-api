@@ -70,6 +70,7 @@ import {
   GetResultsEventLogResponse,
   GetResultsLapChartDataResponse,
   GetResultsLapDataResponse,
+  LapDataEntry,
   SearchResponse,
   GetSeasonListResponse,
   GetSeasonRaceGuideResponse,
@@ -414,6 +415,32 @@ export class IRacingAPIClient {
    */
   async getResultsLapData(params: GetResultsLapDataParams): Promise<GetResultsLapDataResponse> {
     const data = await this.get('/data/results/lap_data', { params });
+
+    // If chunkInfo exists, fetch the actual lap data from the chunk files
+    if (data.chunkInfo && data.chunkInfo.chunkFileNames && data.chunkInfo.chunkFileNames.length > 0) {
+      const allLaps: LapDataEntry[] = [];
+
+      for (const fileName of data.chunkInfo.chunkFileNames) {
+        const chunkUrl = `${data.chunkInfo.baseDownloadUrl}${fileName}`;
+        try {
+          const chunkData = await axios.get<any>(chunkUrl);
+          if (chunkData.data && Array.isArray(chunkData.data)) {
+            // Convert snake_case to camelCase
+            const camelCasedLaps = chunkData.data.map((lap: any) => snakeToCamelCase(lap));
+            allLaps.push(...camelCasedLaps);
+          }
+        } catch (error) {
+          console.error(`Failed to fetch chunk file: ${fileName}`, error);
+        }
+      }
+
+      // Return response with all laps data
+      return {
+        ...data,
+        laps: allLaps,
+      };
+    }
+
     return data;
   }
 
