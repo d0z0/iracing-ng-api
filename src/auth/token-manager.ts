@@ -1,5 +1,5 @@
-import { StoredToken } from '../types/index.js';
-import { isTokenExpired } from '../utils/index.js';
+import { StoredToken } from '../types';
+import { isTokenExpired } from '../utils';
 
 /**
  * TokenManager handles storing, retrieving, and refreshing tokens.

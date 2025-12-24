@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
-import { TokenResponse, StoredToken, PasswordLimitedGrantConfig, AuthError } from '../types/index.js';
-import { maskSecret } from '../utils/index.js';
-import { TokenManager } from './token-manager.js';
+import { TokenResponse, StoredToken, PasswordLimitedGrantConfig, AuthError } from '../types';
+import { maskSecret } from '../utils';
+import { TokenManager } from './token-manager';
 
 const AUTH_SERVER_URL = 'https://oauth.iracing.com';
 const TOKEN_ENDPOINT = `${AUTH_SERVER_URL}/oauth2/token`;

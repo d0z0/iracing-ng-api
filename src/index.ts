@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { PasswordLimitedGrantConfig, AuthorizationCodeFlowConfig, IRacingAPIClientConfig } from './types/index.js';
+import { PasswordLimitedGrantConfig, AuthorizationCodeFlowConfig, IRacingAPIClientConfig } from './types';
 import {
   // Request params
   GetCarsParams,
@@ -95,10 +95,10 @@ import {
   GetWorldRecordsResponse,
   GetTrackAssetsResponse,
   GetTracksResponse,
-} from './types/index.js';
-import { TokenManager } from './auth/token-manager.js';
-import { PasswordLimitedGrantAuth } from './auth/password-limited-grant.js';
-import { AuthorizationCodeFlowAuth } from './auth/authorization-code-flow.js';
+} from './types';
+import { TokenManager } from './auth/token-manager';
+import { PasswordLimitedGrantAuth } from './auth/password-limited-grant';
+import { AuthorizationCodeFlowAuth } from './auth/authorization-code-flow';
 
 const DATA_API_BASE_URL = 'https://members-ng.iracing.com';
 
@@ -413,7 +413,8 @@ export class IRacingAPIClient {
    * Get results lap data
    */
   async getResultsLapData(params: GetResultsLapDataParams): Promise<GetResultsLapDataResponse> {
-    return this.get('/data/results/lap_data', { params });
+    const data = await this.get('/data/results/lap_data', { params });
+    return data;
   }
 
   /**
@@ -665,5 +666,5 @@ export class IRacingAPIClient {
   }
 }
 
-export * from './types/index.js';
-export * from './auth/index.js';
+export * from './types';
+export * from './auth';

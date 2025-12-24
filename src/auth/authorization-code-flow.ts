@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
-import { TokenResponse, StoredToken, AuthorizationCodeFlowConfig, PKCEPair, AuthError } from '../types/index.js';
-import { generatePKCEPair, generateState, maskSecret } from '../utils/index.js';
-import { TokenManager } from './token-manager.js';
+import { TokenResponse, StoredToken, AuthorizationCodeFlowConfig, PKCEPair, AuthError } from '../types';
+import { generatePKCEPair, generateState, maskSecret } from '../utils';
+import { TokenManager } from './token-manager';
 
 const AUTH_SERVER_URL = 'https://oauth.iracing.com';
 const AUTHORIZE_ENDPOINT = `${AUTH_SERVER_URL}/oauth2/authorize`;

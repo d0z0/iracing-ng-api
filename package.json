@@ -25,7 +25,7 @@
     "test": "jest",
     "prepublishOnly": "npm run build",
     "example:password-grant": "ts-node examples/password-limited-grant.ts",
-    "example:auth-code": "ts-node examples/authorization-code-flow.ts"
+    "example:auth-code-flow": "ts-node examples/authorization-code-flow.ts"
   },
   "keywords": [
     "iracing",

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { IRacingAPIClient } from '../src/index.js';
+import { IRacingAPIClient } from '../src';
 
 /**
  * Example: Using the iRacing Data API with Password Limited Grant
@@ -49,7 +49,7 @@ async function main() {
 
     // First request will trigger authentication
     // Subsequent requests will use cached token until it expires
-    const data = await client.get('/data/user/profile');
+    const data = await client.get('/data/member/info');
     console.log('✅ Successfully authenticated!');
     console.log('User Profile:', JSON.stringify(data, null, 2));
 
@@ -67,7 +67,7 @@ async function main() {
 
     // Make another request - this will use the cached token
     console.log('\nMaking another request (using cached token)...');
-    const profile2 = await client.get('/data/user/profile');
+    const profile2 = await client.get('/data/member/info');
     console.log('✅ Request successful!');
 
     // Export tokens for persistence (e.g., save to database or file)

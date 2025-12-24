@@ -1,6 +1,6 @@
 # iRacing Members-NG Data API Node.js Client
 
-A comprehensive Node.js client library for the iRacing Members-NG Data API with built-in OAuth2 authentication support. Supports both the **Password Limited Grant** (for headless/server-side clients) and **Authorization Code Flow** (for distributed applications).
+A comprehensive Node.js client library for the iRacing members-ng Data API with built-in OAuth2 authentication support. Supports both the **Password Limited Grant** (for headless/server-side clients) and **Authorization Code Flow** (for distributed applications).
 
 ## Features
 
@@ -36,7 +36,7 @@ const client = new IRacingAPIClient({
 });
 
 // First request triggers authentication
-const userProfile = await client.get('/data/user/profile');
+const userProfile = await client.get('/data/member/info');
 console.log(userProfile);
 
 // Subsequent requests use cached token automatically
@@ -68,7 +68,7 @@ const returnedState = req.query.state;
 const accessToken = await client.handleAuthorizationCallback(code, returnedState);
 
 // Step 3: Make API requests (token is used automatically)
-const userProfile = await client.get('/data/user/profile');
+const userProfile = await client.get('/data/member/info');
 ```
 
 ## Authentication Flows
@@ -200,7 +200,7 @@ client.clearTokens();
 
 ```typescript
 // GET request
-const data = await client.get('/data/user/profile');
+const data = await client.get('/data/member/info');
 
 // POST request
 const result = await client.post('/data/series', { data: 'value' });
@@ -224,7 +224,7 @@ interface UserProfile {
   displayName: string;
 }
 
-const profile = await client.get<UserProfile>('/data/user/profile');
+const profile = await client.get<UserProfile>('/data/member/info');
 console.log(profile.customerId);
 ```
 
@@ -356,7 +356,7 @@ const client = new IRacingAPIClient({
 
 async function collectData() {
   // First request triggers authentication
-  const profile = await client.get('/data/user/profile');
+  const profile = await client.get('/data/member/info');
   console.log('User:', profile.displayName);
 
   // Token is automatically cached and refreshed
@@ -412,7 +412,7 @@ app.get('/api/profile', async (req, res) => {
     return res.status(401).send('Not authenticated');
   }
 
-  const profile = await client.get('/data/user/profile');
+  const profile = await client.get('/data/member/info');
   res.json(profile);
 });
 
