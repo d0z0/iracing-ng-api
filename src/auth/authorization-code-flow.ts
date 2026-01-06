@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { TokenResponse, StoredToken, AuthorizationCodeFlowConfig, PKCEPair, AuthError } from '../types';
-import { generatePKCEPair, generateState, maskSecret } from '../utils';
+import { generatePKCEPair, maskSecret } from '../utils';
 import { TokenManager } from './token-manager';
 
 const AUTH_SERVER_URL = 'https://oauth.iracing.com';
@@ -8,17 +8,11 @@ const AUTHORIZE_ENDPOINT = `${AUTH_SERVER_URL}/oauth2/authorize`;
 const TOKEN_ENDPOINT = `${AUTH_SERVER_URL}/oauth2/token`;
 
 /**
- * State stored during authorization code flow
- */
-interface AuthorizationState {
-  state: string;
-  codeVerifier?: string;
-  timestamp: number;
-}
-
-/**
  * AuthorizationCodeFlowAuth handles the OAuth2 authorization code flow.
  * This is the preferred flow for distributed applications and public clients.
+ *
+ * State management is handled by the application layer - the application is responsible
+ * for creating the state parameter and verifying it before calling handleCallback.
  *
  * See: https://oauth.iracing.com/oauth2/book/authorization_code_flow.html
  */
@@ -27,10 +21,6 @@ export class AuthorizationCodeFlowAuth {
   private tokenManager: TokenManager;
   private httpClient: AxiosInstance;
   private tokenKey = 'auth_code_token';
-
-  // State management for authorization flow
-  private pendingAuthorizationState: Map<string, AuthorizationState> = new Map();
-  private stateTimeout = 10 * 60 * 1000; // 10 minutes
 
   constructor(config: AuthorizationCodeFlowConfig, tokenManager: TokenManager, httpClient?: AxiosInstance) {
     this.config = config;
@@ -44,21 +34,18 @@ export class AuthorizationCodeFlowAuth {
 
   /**
    * Generate an authorization URL for redirecting the user to iRacing login
-   * @returns Object containing authorizationUrl and state for verification
+   * @param state - State parameter for CSRF protection (caller must generate and verify)
+   * @returns Object containing authorizationUrl and codeVerifier (if PKCE enabled)
    */
-  generateAuthorizationUrl(): { authorizationUrl: string; state: string; codeVerifier?: string } {
-    const state = generateState();
-    const pkce = this.config.usePKCE ? generatePKCEPair() : undefined;
+  generateAuthorizationUrl(state: string): { authorizationUrl: string; codeVerifier?: string } {
+    let codeVerifier: string | undefined;
+    let codeChallenge: string | undefined;
 
-    // Store authorization state for later verification
-    this.pendingAuthorizationState.set(state, {
-      state,
-      codeVerifier: pkce?.codeVerifier,
-      timestamp: Date.now(),
-    });
-
-    // Clean up old states
-    this.cleanupOldStates();
+    if (this.config.usePKCE) {
+      const pkce = generatePKCEPair();
+      codeVerifier = pkce.codeVerifier;
+      codeChallenge = pkce.codeChallenge;
+    }
 
     const params = new URLSearchParams({
       response_type: 'code',
@@ -71,8 +58,8 @@ export class AuthorizationCodeFlowAuth {
       params.append('scope', this.config.scope);
     }
 
-    if (pkce) {
-      params.append('code_challenge', pkce.codeChallenge);
+    if (codeChallenge) {
+      params.append('code_challenge', codeChallenge);
       params.append('code_challenge_method', 'S256');
     }
 
@@ -80,33 +67,20 @@ export class AuthorizationCodeFlowAuth {
 
     return {
       authorizationUrl,
-      state,
-      codeVerifier: pkce?.codeVerifier,
+      codeVerifier,
     };
   }
 
   /**
    * Handle the callback from the authorization server
    * @param code - Authorization code from redirect_uri
-   * @param state - State parameter from redirect_uri
+   * @param codeVerifier - PKCE code verifier (if PKCE was used)
    * @returns Access token string
-   * @throws AuthError if exchange fails or state is invalid
+   * @throws AuthError if exchange fails
    */
-  async handleCallback(code: string, state: string): Promise<string> {
-    // Verify state
-    const authState = this.pendingAuthorizationState.get(state);
-    if (!authState) {
-      throw {
-        error: 'invalid_state',
-        error_description: 'State parameter does not match or has expired',
-      } as AuthError;
-    }
-
-    // Remove the used state
-    this.pendingAuthorizationState.delete(state);
-
+  async handleCallback(code: string, codeVerifier?: string): Promise<string> {
     try {
-      return await this.exchangeCodeForToken(code, state, authState.codeVerifier);
+      return await this.exchangeCodeForToken(code, codeVerifier);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -115,13 +89,12 @@ export class AuthorizationCodeFlowAuth {
   /**
    * Exchange authorization code for access token
    */
-  private async exchangeCodeForToken(code: string, state: string, codeVerifier?: string): Promise<string> {
+  private async exchangeCodeForToken(code: string, codeVerifier?: string): Promise<string> {
     const params = new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: this.config.clientId,
       code,
       redirect_uri: this.config.redirectUri,
-      state,
     });
 
     // Add client_secret if available
@@ -266,23 +239,5 @@ export class AuthorizationCodeFlowAuth {
       error: 'network_error',
       error_description: error instanceof Error ? error.message : 'Unknown error',
     };
-  }
-
-  /**
-   * Clean up authorization states older than stateTimeout
-   */
-  private cleanupOldStates(): void {
-    const now = Date.now();
-    const toDelete: string[] = [];
-
-    this.pendingAuthorizationState.forEach((state, key) => {
-      if (now - state.timestamp > this.stateTimeout) {
-        toDelete.push(key);
-      }
-    });
-
-    toDelete.forEach((key) => {
-      this.pendingAuthorizationState.delete(key);
-    });
   }
 }
