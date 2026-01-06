@@ -225,21 +225,21 @@ export class IRacingAPIClient {
   /**
    * For Authorization Code Flow: Generate authorization URL
    */
-  generateAuthorizationUrl(): { authorizationUrl: string; state: string; codeVerifier?: string } {
+  generateAuthorizationUrl(state: string): { authorizationUrl: string; codeVerifier?: string } {
     if (!this.authCodeFlowAuth) {
       throw new Error('Authorization Code Flow not configured');
     }
-    return this.authCodeFlowAuth.generateAuthorizationUrl();
+    return this.authCodeFlowAuth.generateAuthorizationUrl(state);
   }
 
   /**
    * For Authorization Code Flow: Handle OAuth callback
    */
-  async handleAuthorizationCallback(code: string, state: string): Promise<string> {
+  async handleAuthorizationCallback(code: string, codeVerifier?: string): Promise<string> {
     if (!this.authCodeFlowAuth) {
       throw new Error('Authorization Code Flow not configured');
     }
-    return await this.authCodeFlowAuth.handleCallback(code, state);
+    return await this.authCodeFlowAuth.handleCallback(code, codeVerifier);
   }
 
   // ===== CAR ENDPOINTS =====

@@ -34,8 +34,8 @@ async function main() {
   });
 
   try {
-    const memberProfile = await client.getMemberProfile();
-    console.log('✅ Member Profile:', JSON.stringify(memberProfile, null, 2));
+    const tracks = await client.getTracks();
+    console.log('✅ Tracks:', JSON.stringify(tracks, null, 2));
   } catch (error) {
     console.error('❌ Error:', error);
   }

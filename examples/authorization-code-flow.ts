@@ -77,7 +77,9 @@ async function main() {
 
       try {
         console.log('📝 Received authorization code, exchanging for tokens...');
-        const accessToken = await client.handleAuthorizationCallback(code, state);
+        // Retrieve the stored code verifier (if PKCE was used)
+        const storedCodeVerifier = sessionStorage?.getItem?.('oauth_code_verifier');
+        const accessToken = await client.handleAuthorizationCallback(code, storedCodeVerifier || undefined);
         console.log('✅ Successfully authenticated!');
         console.log(`Access Token: ${accessToken.substring(0, 20)}...`);
 
@@ -122,14 +124,15 @@ async function main() {
     });
 
     // Generate authorization URL
-    const { authorizationUrl, state, codeVerifier } = client.generateAuthorizationUrl();
+    const { authorizationUrl, codeVerifier } = client.generateAuthorizationUrl(state);
 
     console.log('\n📲 Authorization URL:');
     console.log(authorizationUrl);
 
     if (codeVerifier) {
-      console.log('\n🔐 PKCE Code Verifier (stored for later verification):');
+      console.log('\n🔐 PKCE Code Verifier (store this for the callback):');
       console.log(codeVerifier.substring(0, 20) + '...');
+      // In a real app, store this securely (sessionStorage, state management, etc.)
     }
 
     console.log('\n⏳ Waiting for user to authorize...');

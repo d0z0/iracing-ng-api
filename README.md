@@ -134,6 +134,7 @@ try {
 - Optional PKCE support for enhanced security
 - State parameter for CSRF protection
 - Refresh token support
+- Pluggable state storage for distributed systems
 
 ```typescript
 const client = new IRacingAPIClient({
@@ -147,7 +148,7 @@ const client = new IRacingAPIClient({
 });
 
 // Step 1: Generate URL
-const { authorizationUrl, state, codeVerifier } = client.generateAuthorizationUrl();
+const { authorizationUrl, state, codeVerifier } = await client.generateAuthorizationUrl();
 // state and codeVerifier are stored locally for verification
 
 // Step 2: Redirect user to authorizationUrl
@@ -156,6 +157,105 @@ const { authorizationUrl, state, codeVerifier } = client.generateAuthorizationUr
 // Step 3: Handle callback
 const token = await client.handleAuthorizationCallback(code, state);
 // Client will validate state and exchange code for tokens
+```
+
+#### Authorization State Management
+
+The library leaves state management to the application. This allows flexibility for different deployment scenarios:
+
+- **Single instance apps**: Store state in memory or sessionStorage
+- **Load-balanced servers**: Store state in a database or cache
+- **SPAs**: Store state in sessionStorage or localStorage
+
+**Implementation pattern:**
+
+```typescript
+import { generateState } from 'iracing-ng-api/utils';
+
+// Step 1: Generate state and get authorization URL
+const state = generateState();
+const { authorizationUrl, codeVerifier } = client.generateAuthorizationUrl(state);
+
+// Store state and codeVerifier in your chosen storage
+sessionStorage.setItem('oauth_state', state);
+if (codeVerifier) {
+  sessionStorage.setItem('oauth_code_verifier', codeVerifier);
+}
+
+// Step 2: Redirect user to authorization URL
+window.location.href = authorizationUrl;
+
+// Step 3: Handle callback
+const code = req.query.code as string;
+const returnedState = req.query.state as string;
+
+// Verify state matches what you stored
+const storedState = sessionStorage.getItem('oauth_state');
+if (returnedState !== storedState) {
+  throw new Error('Invalid state parameter');
+}
+
+// Get stored code verifier (if PKCE was used)
+const storedCodeVerifier = sessionStorage.getItem('oauth_code_verifier');
+
+// Exchange code for token
+const accessToken = await client.handleAuthorizationCallback(code, storedCodeVerifier || undefined);
+```
+
+**Next.js example with sessionStorage:**
+
+```typescript
+'use client';
+
+import { generateState } from 'iracing-ng-api/utils';
+import { useRouter } from 'next/navigation';
+
+export function LoginButton() {
+  const router = useRouter();
+
+  const handleLogin = async () => {
+    // Generate state and get authorization URL
+    const state = generateState();
+    const { authorizationUrl, codeVerifier } = client.generateAuthorizationUrl(state);
+
+    // Store state and code verifier
+    sessionStorage.setItem('oauth_state', state);
+    if (codeVerifier) {
+      sessionStorage.setItem('oauth_code_verifier', codeVerifier);
+    }
+
+    // Redirect to iRacing login
+    window.location.href = authorizationUrl;
+  };
+
+  return <button onClick={handleLogin}>Login with iRacing</button>;
+}
+
+// In your callback route handler
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
+
+  // Verify state from URL matches stored state
+  const storedState = sessionStorage.getItem('oauth_state');
+  if (state !== storedState) {
+    return new Response('Invalid state', { status: 400 });
+  }
+
+  // Get stored code verifier (if PKCE was enabled)
+  const storedCodeVerifier = sessionStorage.getItem('oauth_code_verifier');
+
+  // Exchange code for token
+  const accessToken = await client.handleAuthorizationCallback(code!, storedCodeVerifier || undefined);
+
+  // Clear stored values
+  sessionStorage.removeItem('oauth_state');
+  sessionStorage.removeItem('oauth_code_verifier');
+
+  // Redirect to authenticated page
+  return Response.redirect('/dashboard');
+}
 ```
 
 ## Token Management
